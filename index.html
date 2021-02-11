@@ -38,9 +38,9 @@ ________________________IMPORT_THREEJS_ELEMENT__________________________________
 			import { ConvexObjectBreaker } from './examples/jsm/misc/ConvexObjectBreaker.js';
 			import { ConvexGeometry } from './examples/jsm/geometries/ConvexGeometry.js';
 
-/*
+			/*
 ____________________________GLOBAL_VARIABLE_____________________________________
-*/
+		*/
 			let renderer, scene, camera, stats, clock;
 
 			let spotLight, lightHelper, shadowCameraHelper;
@@ -51,10 +51,23 @@ ____________________________GLOBAL_VARIABLE_____________________________________
 			let fpc;
 			let ready = false;
 			let water;
+			const param = {
+	color: '#ffffff',
+	scale: 4,
+	flowX: 1,
+	flowY: 1
+};
+const gravityConstant = - 9.8;
+let physicsWorld;
+const rigidBodies = [];
+const softBodies = [];
+const margin = 0.05;
+let transformAux1;
+let softBodyHelpers;
 
-/*
+			/*
 _____________________________FUNCTIONS_CALL_____________________________________
-*/
+		*/
 			const startButton = document.getElementById( 'startButton' );
 						startButton.addEventListener( 'click', function () {
 
@@ -64,6 +77,7 @@ _____________________________FUNCTIONS_CALL_____________________________________
 								animate();
 								buildGui();
 								render();
+								initPhysics();
 
 							} );
 
@@ -195,8 +209,8 @@ ________________________________________WATER__________________________________
 const waterGeometry = new THREE.PlaneGeometry( 25, 200 );
 
 				water = new Water( waterGeometry, {
-					color: '#ffffff',
-					scale: 2,
+					color: param.color,
+					scale: param.scale,
 					flowDirection: new THREE.Vector2( 1024, 1024 ),
 					textureWidth: 1024,
 					textureHeight: 1024
@@ -220,6 +234,8 @@ cubeTextureLoader.setPath( './examples/textures/cube/Park2/' );
  ] );
 
  scene.background = cubeTexture;
+
+
 /*
 ____________________________CASTLE_STRUCTURE____________________________________
 */
@@ -327,7 +343,6 @@ ____________________________CASTLE_STRUCTURE____________________________________
 
 
 
-
 				render();
 
 				window.addEventListener( 'resize', onResize, false );
@@ -405,6 +420,27 @@ ____________________________UPDATE_LIGHT________________________________________
 
 
 			}
+			/*
+			____________________________PHYSICS_____________________________________________
+			*/
+
+						function initPhysics() {
+
+							// Physics configuration
+
+							const collisionConfiguration = new Ammo.btSoftBodyRigidBodyCollisionConfiguration();
+							const dispatcher = new Ammo.btCollisionDispatcher( collisionConfiguration );
+							const broadphase = new Ammo.btDbvtBroadphase();
+							const solver = new Ammo.btSequentialImpulseConstraintSolver();
+							const softBodySolver = new Ammo.btDefaultSoftBodySolver();
+							physicsWorld = new Ammo.btSoftRigidDynamicsWorld( dispatcher, broadphase, solver, collisionConfiguration, softBodySolver );
+							physicsWorld.setGravity( new Ammo.btVector3( 0, gravityConstant, 0 ) );
+							physicsWorld.getWorldInfo().set_m_gravity( new Ammo.btVector3( 0, gravityConstant, 0 ) );
+
+							transformAux1 = new Ammo.btTransform();
+							softBodyHelpers = new Ammo.btSoftBodyHelpers();
+
+						}
 
 			/*
 ____________________________BUILD GUI Interface_________________________________
