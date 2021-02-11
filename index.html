@@ -198,11 +198,11 @@ ______________________________CASTLE_STRUCTURE__________________________________
         let adderCones = [cones.length];
         let adderTours = [tours.length];
 
-        const brick  = new THREE.TextureLoader().load( './Brick.jpg' );
-        const toit = new THREE.TextureLoader().load( './tiles.jpg' );
-        const grass = new THREE.TextureLoader().load('./three.js-master/examples/textures/terrain/grasslight-big.jpg');
-				const door = new THREE.TextureLoader().load('./Doors.jpg');
-				const door2 = new THREE.TextureLoader().load('./Doors2.jpg');
+        const brick  = new THREE.TextureLoader().load( 'Brick.jpg' );
+        const toit = new THREE.TextureLoader().load( 'tiles.jpg' );
+        const grass = new THREE.TextureLoader().load('./examples/textures/terrain/grasslight-big.jpg');
+				const door = new THREE.TextureLoader().load('Doors.jpg');
+				const door2 = new THREE.TextureLoader().load('Doors2.jpg');
 
         for (let i = 0; i < walls.length; i++) {
           adderWalls[i] =  new THREE.Mesh( walls[i],i != 0 ? texture(1,brick,2,4) : texture(1, brick,1,1));
