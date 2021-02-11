@@ -14,6 +14,12 @@
 	</head>
 	<body>
 		<div id="container"></div>
+			<div id="overlay">
+				<button id="startButton">Play</button>
+			</div>
+			<script src='./examples/js/libs/ammo.wasm.js'>
+
+			</script>
 		<script type="module">
       /*
 ________________________IMPORT_THREEJS_ELEMENT__________________________________
@@ -28,29 +34,49 @@ ________________________IMPORT_THREEJS_ELEMENT__________________________________
 			import { ColladaLoader } from './examples/jsm/loaders/ColladaLoader.js';
 			import Stats from './examples/jsm/libs/stats.module.js';
 			import { FirstPersonControls } from './examples/jsm/controls/FirstPersonControls.js';
+			import { Water } from './examples/jsm/objects/Water2.js';
+			import { ConvexObjectBreaker } from './examples/jsm/misc/ConvexObjectBreaker.js';
+			import { ConvexGeometry } from './examples/jsm/geometries/ConvexGeometry.js';
 
-
+/*
+____________________________GLOBAL_VARIABLE_____________________________________
+*/
 			let renderer, scene, camera, stats, clock;
 
 			let spotLight, lightHelper, shadowCameraHelper;
+			let refractor;
 
 			let gui;
 			let mixer;
 			let fpc;
 			let ready = false;
+			let water;
 
+/*
+_____________________________FUNCTIONS_CALL_____________________________________
+*/
+			const startButton = document.getElementById( 'startButton' );
+						startButton.addEventListener( 'click', function () {
 
+							Ammo().then( function () {
 
-			init();
-			animate();
+								init();
+								animate();
+								buildGui();
+								render();
 
-			function init() {
+							} );
+
+						} );
+
 
 
         /*
 ______________________________BUILD_SCENE_______________________________________
         */
-
+				function init() {
+					const overlay = document.getElementById( 'overlay' );
+					overlay.remove();
 				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -92,7 +118,7 @@ ______________________________BUILD_SCENE_______________________________________
 				camera.add( listener );
 				const sound = new THREE.Audio( listener );
 				const audioLoader = new THREE.AudioLoader();
-				audioLoader.load( 'three.js-master/examples/sounds/ping_pong.mp3', function( buffer ) {
+				audioLoader.load( './za warudo.m4a', function( buffer ) {
 					sound.setBuffer( buffer );
 					sound.setLoop( true );
 					sound.setVolume( 0.5 );
@@ -137,22 +163,17 @@ ______________________________SPOTLIGHT_HELPER__________________________________
 				scene.add( shadowCameraHelper );
 
 				/*
-______________________________CASTLE_STRUCTURE_________________________________________
-
+______________________________AVATAR____________________________________________
         */
 
 
-
-
 				const loader = new ColladaLoader();
-				loader.load( './three.js-master/examples/models/collada/stormtrooper/stormtrooper.dae', function ( collada ) {
-
+				loader.load( './examples/models/collada/stormtrooper/stormtrooper.dae',
+				function ( collada ) {
 					const animations = collada.animations;
 					const avatar = collada.scene;
-
-					avatar.traverse( function ( node ) {
-
-						if ( node.isMesh ) {
+					avatar.traverse( function ( node ){
+						if ( node.isMesh ){
 
 							node.frustumCulled = false;
 							node.castShadow = true;
@@ -167,8 +188,41 @@ ______________________________CASTLE_STRUCTURE__________________________________
 					scene.add(avatar);
 					avatar.position.set(11,-1,24);
 					avatar.rotation.z = 3;
+					} );
+/*
+________________________________________WATER__________________________________
+*/
+const waterGeometry = new THREE.PlaneGeometry( 25, 200 );
 
+				water = new Water( waterGeometry, {
+					color: '#ffffff',
+					scale: 2,
+					flowDirection: new THREE.Vector2( 1024, 1024 ),
+					textureWidth: 1024,
+					textureHeight: 1024
 				} );
+
+				water.position.y = 0;
+				water.position.x = 90;
+				water.rotation.x = Math.PI * - 0.5;
+				scene.add( water );
+
+
+/*
+____________________________SKYBOX______________________________________________
+*/
+const cubeTextureLoader = new THREE.CubeTextureLoader();
+cubeTextureLoader.setPath( './examples/textures/cube/Park2/' );
+ const cubeTexture = cubeTextureLoader.load( [
+	 "posx.jpg", "negx.jpg",
+	 "posy.jpg", "negy.jpg",
+	 "posz.jpg", "negz.jpg"
+ ] );
+
+ scene.background = cubeTexture;
+/*
+____________________________CASTLE_STRUCTURE____________________________________
+*/
         let walls = [
 										new THREE.BoxBufferGeometry(50, 20),
 										new THREE.BoxBufferGeometry(80, 50),
@@ -198,7 +252,7 @@ ______________________________CASTLE_STRUCTURE__________________________________
         let adderCones = [cones.length];
         let adderTours = [tours.length];
 
-        const brick  = new THREE.TextureLoader().load( 'Brick.jpg' );
+        const brick  = new THREE.TextureLoader().load( 'wall.jpg' );
         const toit = new THREE.TextureLoader().load( 'tiles.jpg' );
         const grass = new THREE.TextureLoader().load('./examples/textures/terrain/grasslight-big.jpg');
 				const door = new THREE.TextureLoader().load('Doors.jpg');
@@ -267,8 +321,9 @@ ______________________________CASTLE_STRUCTURE__________________________________
 				mesh.receiveShadow = true;
 				scene.add( mesh );
 
-
-
+				for (var i = 0; i < walls.length ; i++) {
+					walls[i]
+				}
 
 
 
@@ -425,9 +480,6 @@ ____________________________BUILD GUI Interface_________________________________
 			}
 
 
-			buildGui();
-
-			render();
 
 		</script>
 
